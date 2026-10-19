@@ -1,0 +1,1837 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Swimlane LOS CDM</title>
+    <style>
+      :root {
+        --bg: #f6f7f9;
+        --panel: #fff;
+        --ink: #1d2228;
+        --muted: #5f6b78;
+        --line: #d8dde4;
+        --band1: #fbfcfd;
+        --band2: #f2f4f7;
+        --side: #e9ebef;
+        --edge: #8591a0;
+        --accent: #1f5fbf;
+        --node: #fff;
+        --sel: #e09a00;
+        --cust: #8a5a00;
+        --cust-bg: #fbf0dc;
+        --ptg: #1f5fbf;
+        --ptg-bg: #e6eefb;
+        --los: #127a52;
+        --los-bg: #e1f3ea;
+        --cdm: #6b3fc0;
+        --cdm-bg: #eee7fb;
+        --end: #c62828;
+        --end-bg: #fdecec;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #121417;
+          --panel: #1a1d21;
+          --ink: #e6e9ed;
+          --muted: #9aa4b1;
+          --line: #2f353d;
+          --band1: #171a1e;
+          --band2: #1c2025;
+          --side: #23272d;
+          --edge: #7d8896;
+          --accent: #5b9bff;
+          --node: #20242a;
+          --sel: #f0b429;
+          --cust: #e0b05a;
+          --cust-bg: #3a2e17;
+          --ptg: #7fb0ff;
+          --ptg-bg: #1c2a42;
+          --los: #4cc38a;
+          --los-bg: #15302a;
+          --cdm: #ad90ff;
+          --cdm-bg: #2a2140;
+          --end: #ff7b7b;
+          --end-bg: #3a1d1d;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #121417;
+        --panel: #1a1d21;
+        --ink: #e6e9ed;
+        --muted: #9aa4b1;
+        --line: #2f353d;
+        --band1: #171a1e;
+        --band2: #1c2025;
+        --side: #23272d;
+        --edge: #7d8896;
+        --accent: #5b9bff;
+        --node: #20242a;
+        --sel: #f0b429;
+        --cust: #e0b05a;
+        --cust-bg: #3a2e17;
+        --ptg: #7fb0ff;
+        --ptg-bg: #1c2a42;
+        --los: #4cc38a;
+        --los-bg: #15302a;
+        --cdm: #ad90ff;
+        --cdm-bg: #2a2140;
+        --end: #ff7b7b;
+        --end-bg: #3a1d1d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.45 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      main {
+        max-width: 2040px;
+        margin: 0 auto;
+        padding: 20px 16px 40px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 14px;
+        font-size: 13px;
+      }
+      code {
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+      }
+      .tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--line);
+        margin: 0 0 10px;
+      }
+      .tab {
+        padding: 8px 16px;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        background: none;
+        color: var(--muted);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-bottom: -1px;
+      }
+      .tab:hover {
+        color: var(--ink);
+      }
+      .tab[aria-selected="true"] {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+      .intro {
+        margin: 0 0 10px;
+        font-size: 13px;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin: 0 0 10px;
+      }
+      .bar .sp {
+        flex: 1;
+      }
+      .btn {
+        padding: 5px 11px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--panel);
+        color: var(--ink);
+        font: inherit;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        border-color: var(--muted);
+      }
+      .btn.on {
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow: inset 0 -2px 0 var(--accent);
+      }
+      .frame {
+        display: flex;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+      .labels {
+        flex: 0 0 132px;
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .labels .hsp {
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: flex-end;
+        padding: 0 10px 6px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .lane-lbl {
+        border-bottom: 1px solid var(--line);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border-left: 4px solid;
+      }
+      .lane-lbl b {
+        font-size: 13.5px;
+      }
+      .lane-lbl span {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .store {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        width: max-content;
+      }
+      .viewport {
+        flex: 1;
+        overflow-x: auto;
+        overflow-y: hidden;
+        position: relative;
+      }
+      .sizer {
+        position: relative;
+      }
+      .canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform-origin: 0 0;
+      }
+      .band {
+        position: absolute;
+        left: 0;
+      }
+      .colsep {
+        position: absolute;
+        border-left: 1px dashed var(--line);
+      }
+      .sidecol {
+        position: absolute;
+        background: var(--side);
+        opacity: 0.55;
+      }
+      .ghead {
+        position: absolute;
+        text-align: center;
+        font-weight: 700;
+        font-size: 13.5px;
+      }
+      .chead {
+        position: absolute;
+        text-align: center;
+        font-size: 11.5px;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+      }
+      .stage {
+        font:
+          600 10.5px ui-monospace,
+          Consolas,
+          monospace;
+        padding: 1px 6px;
+        border-radius: 9px;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        background: var(--panel);
+      }
+      svg.edges {
+        position: absolute;
+        left: 0;
+        top: 0;
+        overflow: visible;
+      }
+      svg.edges path {
+        fill: none;
+        stroke: var(--edge);
+        stroke-width: 1.5;
+      }
+      svg.edges path.dash {
+        stroke-dasharray: 5 4;
+      }
+      svg.edges text {
+        font-size: 10.5px;
+        fill: var(--muted);
+        paint-order: stroke;
+        stroke: var(--panel);
+        stroke-width: 4px;
+        stroke-linejoin: round;
+      }
+      svg.edges .dim {
+        opacity: 0.15;
+      }
+      svg.edges .hi path {
+        stroke: var(--accent);
+        stroke-width: 2;
+      }
+      svg.edges .hi text {
+        fill: var(--accent);
+      }
+      .node {
+        position: absolute;
+        border: 1px solid var(--line);
+        border-left: 4px solid;
+        border-radius: 7px;
+        background: var(--node);
+        color: var(--ink);
+        font:
+          12.5px/1.3 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        padding: 6px 8px 6px 22px;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: opacity 0.15s;
+      }
+      .node:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+      .node .num {
+        position: absolute;
+        left: 4px;
+        top: 5px;
+        font:
+          700 10px ui-monospace,
+          Consolas,
+          monospace;
+        color: var(--muted);
+      }
+      .node .db {
+        position: absolute;
+        right: 4px;
+        bottom: -9px;
+        font:
+          600 9.5px system-ui,
+          sans-serif;
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      .node.gate {
+        border: 0;
+        background: none;
+        padding: 0;
+        justify-content: center;
+        text-align: center;
+      }
+      .node.gate svg {
+        position: absolute;
+        inset: 0;
+      }
+      .node.gate span.t {
+        position: relative;
+        padding: 0 26px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .node.gate .num {
+        left: 6px;
+        top: 4px;
+      }
+      .node.end {
+        border: 1px solid var(--end);
+        border-radius: 23px;
+        background: var(--end-bg);
+        color: var(--end);
+        justify-content: center;
+        text-align: center;
+        padding: 4px 10px;
+        font-weight: 600;
+      }
+      .node.end .num {
+        display: none;
+      }
+      .node.dim {
+        opacity: 0.22;
+      }
+      .node.sel {
+        outline: 2px solid var(--sel);
+        outline-offset: 2px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+        margin: 10px 2px;
+      }
+      .legend i {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+      .lg-step {
+        width: 22px;
+        height: 14px;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--ptg);
+        border-radius: 3px;
+        background: var(--node);
+      }
+      .lg-gate {
+        width: 14px;
+        height: 14px;
+        transform: rotate(45deg);
+        border: 1.5px solid var(--cdm);
+        background: var(--cdm-bg);
+      }
+      .lg-end {
+        width: 24px;
+        height: 12px;
+        border-radius: 7px;
+        border: 1px solid var(--end);
+        background: var(--end-bg);
+      }
+      .lg-line {
+        width: 26px;
+        border-top: 1.5px solid var(--edge);
+      }
+      .lg-dash {
+        width: 26px;
+        border-top: 1.5px dashed var(--edge);
+      }
+      .detail,
+      .apitab {
+        margin-top: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 14px 16px;
+      }
+      .detail {
+        min-height: 96px;
+      }
+      .detail h2,
+      .apitab h2 {
+        font-size: 15px;
+        margin: 0 0 2px;
+      }
+      .detail .meta,
+      .apitab .meta {
+        color: var(--muted);
+        font-size: 12.5px;
+        margin: 0 0 10px;
+      }
+      .detail dl {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 6px 14px;
+        margin: 0;
+      }
+      .detail dt {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .detail dd {
+        margin: 0;
+      }
+      .detail .empty {
+        color: var(--muted);
+      }
+      .apis {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .apis li {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .ep {
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+        word-break: break-word;
+      }
+      .ep b {
+        font-weight: 700;
+        margin-right: 4px;
+      }
+      .ep.los {
+        color: var(--los);
+      }
+      .ep.cdm {
+        color: var(--cdm);
+      }
+      .apis .desc {
+        font-size: 13px;
+      }
+      .tablewrap {
+        overflow-x: auto;
+      }
+      .apitab table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 680px;
+        font-size: 13px;
+      }
+      .apitab th,
+      .apitab td {
+        text-align: left;
+        vertical-align: top;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .apitab th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .apitab td.step {
+        width: 220px;
+        cursor: pointer;
+      }
+      .apitab td.step:hover {
+        color: var(--accent);
+      }
+      .apitab td.step .n {
+        font:
+          700 11px ui-monospace,
+          Consolas,
+          monospace;
+        color: var(--muted);
+        margin-right: 4px;
+      }
+      .apitab td.ep {
+        width: 330px;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 12.5px;
+        margin: 12px 2px 0;
+      }
+      @media (max-width: 700px) {
+        .labels {
+          flex-basis: 96px;
+        }
+        .lane-lbl span {
+          display: none;
+        }
+        .detail dl {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Swimlane end to end LOS → CDM</h1>
+      <p class="sub">
+        Alur pengajuan sampai kontrak (Generate AR), desain gate PII: data
+        pribadi hanya disimpan di CDM, LOS menyimpan data proses dan rujukan
+        <code>APPL_NO</code> / <code>CUST_NO</code>. Pilih tab sesuai jalan
+        masuk. Klik langkah untuk melihat apa yang terjadi, data yang ditulis,
+        dan API yang dipanggil. Urutan semua API ada di tabel di bawah diagram.
+      </p>
+      <div class="tabs" role="tablist" aria-label="Jalan masuk">
+        <button class="tab" role="tab" data-tab="leads">Order dari Leads</button>
+        <button class="tab" role="tab" data-tab="prospect">
+          Order dari Prospect
+        </button>
+      </div>
+      <p class="intro" id="intro"></p>
+      <div class="bar" role="toolbar" aria-label="Sorot alur">
+        <button class="btn on" data-f="all">Semua</button>
+        <button class="btn" data-f="ro">Customer lama (RO)</button>
+        <button class="btn" data-f="pii">Letak data pribadi</button>
+        <button class="btn" data-f="batal">Batal &amp; retensi</button>
+        <span class="sp"></span>
+        <button class="btn" id="fit">Muat ke lebar layar</button>
+      </div>
+      <div class="frame">
+        <div class="labels" id="labels"></div>
+        <div class="viewport" id="vp">
+          <div class="sizer" id="sizer"><div class="canvas" id="cv"></div></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="lg-step"></i>Langkah</span>
+        <span><i class="lg-gate"></i>Keputusan</span>
+        <span><i class="lg-end"></i>Berhenti</span>
+        <span><i class="lg-line"></i>Alur utama</span>
+        <span><i class="lg-dash"></i>Alur alternatif / samping</span>
+        <span
+          ><b style="color: var(--los)">DB LOS</b> = menulis data proses (tanpa
+          data pribadi) · <b style="color: var(--cdm)">DB CDM</b> = menulis data
+          pribadi · CDM selalu dipanggil dulu, lalu LOS menulis</span
+        >
+      </div>
+      <section class="detail" id="detail" aria-live="polite"></section>
+      <section class="apitab">
+        <h2>Urutan API</h2>
+        <p class="meta" id="apimeta"></p>
+        <div class="tablewrap"><table id="apitable"></table></div>
+      </section>
+      <p class="note">
+        Sumber: api-contract-los-cdm.md (bagian 4–12) dan API-CDM.md (API 10–12)
+        · 18 Oktober 2026 · nama endpoint masih usulan. Nomor di depan deskripsi
+        API adalah nomor bagian di api-contract-los-cdm.md.
+      </p>
+    </main>
+    <script>
+      "use strict";
+      const LANES = [
+        { id: "cust", name: "Customer", sub: "Sumber data pribadi" },
+        { id: "ptg", name: "Petugas LOS", sub: "Role SF · CA · CP · CPCL" },
+        {
+          id: "los",
+          name: "Sistem LOS",
+          sub: "Data proses",
+          store: "DB LOS",
+          storeNote: "tanpa data pribadi",
+        },
+        {
+          id: "cdm",
+          name: "Sistem CDM",
+          sub: "Data pribadi",
+          store: "DB CDM",
+          storeNote: "data pribadi",
+        },
+      ];
+      const C = {
+        cek: {
+          id: "cek",
+          slots: 3,
+          group: "1. Cek data customer",
+          sub: "4.1",
+          stage: "belum ada",
+        },
+        leads: {
+          id: "leads",
+          slots: 3,
+          group: "2. Leads",
+          sub: "simpan, follow up, kirim ke prospect",
+          stage: "LEADS",
+        },
+        prosL: {
+          id: "pros",
+          slots: 2,
+          group: "3. Prospect",
+          sub: "dari Leads · 5.9",
+          stage: "PROSPECT",
+        },
+        prosD: {
+          id: "pros",
+          slots: 2,
+          group: "3. Prospect",
+          sub: "tanpa Leads · 5.2",
+          stage: "PROSPECT",
+        },
+        lengkapi: {
+          id: "lengkapi",
+          slots: 1,
+          group: "3. Prospect",
+          sub: "6.x · 7.x",
+          stage: "PROSPECT",
+        },
+        appr: {
+          id: "appr",
+          slots: 2,
+          group: "4. Persetujuan",
+          sub: "5.7",
+          stage: "ORDER",
+        },
+        ord: {
+          id: "ord",
+          slots: 2,
+          group: "5. Order",
+          sub: "verifikasi · 8.3",
+          stage: "ORDER",
+        },
+        ar: {
+          id: "ar",
+          slots: 2,
+          group: "6. Kontrak",
+          sub: "Generate AR · 8.4",
+          stage: "AR",
+        },
+        batal: {
+          id: "batal",
+          slots: 2,
+          group: "7. Batal & retensi",
+          sub: "alur samping",
+          stage: "BATAL",
+          side: true,
+        },
+      };
+
+      // node: lane, col, slot (posisi dalam kolom), row (baris dalam lane), kind, t (teks),
+      // store (DB yang ditulis), tags (filter), apa, data, api ([endpoint, deskripsi] per API yang dipanggil)
+      const RO = ["ro"];
+      const cekNodes = (ngText, ngApa) => [
+        {
+          id: "n1",
+          lane: "cust",
+          col: "cek",
+          t: "Serahkan KTP, sebut 6 data",
+          tags: ["pii"],
+          apa: "Customer memberi KTP. Petugas menanyakan tempat lahir dan nama ibu kandung untuk verifikasi.",
+          data: "Belum disimpan di mana pun.",
+          api: [],
+        },
+        {
+          id: "n2",
+          lane: "ptg",
+          col: "cek",
+          t: "Input 6 data, cek ke CDM",
+          tags: ["pii"],
+          apa: "Jenis identitas, NIK, nama, tempat dan tanggal lahir, nama ibu. Cek jalan otomatis 2 detik setelah 6 data lengkap; berikutnya lewat tombol. LOS meneruskan ke tiga API CDM dan menggabungkan hasilnya.",
+          data: "Belum disimpan.",
+          api: [
+            [
+              "POST /los/v1/customer-checks",
+              "4.1 · Cek awal customer: screening DTTOT dan blacklist, lalu pencocokan customer lama (RO). Nilai asli 6 data tidak dikirim balik.",
+            ],
+          ],
+        },
+        {
+          id: "n3",
+          lane: "cdm",
+          col: "cek",
+          kind: "gate",
+          t: "Lolos screening?",
+          apa: "Dicek ke DTTOT dan blacklist (whitelist ikut diperhitungkan), paralel. Kalau salah satu tidak CLEAR, pengajuan tidak boleh lanjut; DTTOT lebih berat. Detail daftar tidak dikirim ke LOS.",
+          data: "Hanya dibaca: MST_DTTOT, MST_CUST_BLACKLIST, MST_CUST_WHITELIST.",
+          api: [
+            [
+              "POST /cdm/v1/dtot",
+              "9.1 · Cek daftar DTTOT lewat NIK, lalu nama + tanggal lahir. Hasil CLEAR atau DTTOT.",
+            ],
+            [
+              "POST /cdm/v1/blacklist",
+              "9.2 · Cek blacklist internal lewat NIK; kalau juga ada di whitelist aktif, hasilnya CLEAR. Hasil CLEAR atau BLACKLIST.",
+            ],
+          ],
+        },
+        {
+          id: "nx",
+          lane: "ptg",
+          col: "cek",
+          slot: 1,
+          kind: "end",
+          t: "Tidak bisa dilanjutkan",
+          num: "x",
+          apa: "Hasil screening DTTOT atau BLACKLIST. Pengajuan tidak disimpan.",
+          data: "Tidak ada yang disimpan.",
+          api: [],
+        },
+        {
+          id: "n4",
+          lane: "cdm",
+          col: "cek",
+          row: 1,
+          kind: "gate",
+          t: "Customer lama?",
+          tags: RO,
+          apa: "Dicari di golden record lewat NIK. CDM hanya menjawab sesuai/tidak untuk nama, tempat lahir, tanggal lahir, dan nama ibu; nilai aslinya tidak dikirim. Jumlah cek per user dibatasi supaya tidak dipakai menebak data.",
+          data: "Hanya dibaca: MST_CUST_IND, MST_CUST_IND_LOS (pengajuan berjalan), MST_CONTRACT (ringkasan kontrak RO).",
+          api: [
+            [
+              "POST /cdm/v1/customer-matches",
+              "10.1 · Hasil NOT_FOUND, IN_PROGRESS, atau CUSTOMER; ringkasan kontrak untuk RO; hasil cocok per parameter.",
+            ],
+          ],
+        },
+        {
+          id: "n5",
+          lane: "cdm",
+          col: "cek",
+          slot: 1,
+          row: 1,
+          t: "Kirim data lama, tersamar sesuai role",
+          tags: RO,
+          apa: "Prefill jenis kelamin, status, HP, dan alamat. Yang tersamar mengikuti aturan masking untuk aplikasi dan role yang login. Prefill hanya dikirim kalau tanggal lahir cocok.",
+          data: "Hanya dibaca: MST_MASKING.",
+          api: [
+            [
+              "POST /cdm/v1/customer-matches",
+              "10.1 · Bagian prefill di response yang sama, beserta daftar masked_fields.",
+            ],
+          ],
+        },
+        {
+          id: "n6",
+          lane: "cust",
+          col: "cek",
+          slot: 2,
+          t: "Konfirmasi data lama masih sama",
+          tags: RO,
+          apa: "Petugas menanyakan ke customer. Field tersamar yang dikonfirmasi tidak dikirim ulang nilainya; CDM mengisinya dari golden record.",
+          data: "–",
+          api: [],
+        },
+        {
+          id: "ng",
+          lane: "ptg",
+          col: "cek",
+          slot: 2,
+          t: ngText,
+          tags: RO,
+          apa: ngApa,
+          data: "Belum disimpan.",
+          api: [],
+        },
+      ];
+
+      const leadsNodes = [
+        {
+          id: "n7",
+          lane: "ptg",
+          col: "leads",
+          t: "Simpan Leads",
+          tags: RO,
+          apa: "LOS membuat APPL_NO, memanggil CDM (screening ulang, lalu data pribadi), lalu menyimpan data proses. Tidak ada cek dealer di Leads.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "POST /los/v1/leads",
+              "4.2 · Simpan leads baru: produk, objek, struktur awal, data customer, dan pemilik BPKB. followup_status = NEW.",
+            ],
+          ],
+        },
+        {
+          id: "n8",
+          lane: "cdm",
+          col: "leads",
+          t: "Screening ulang, simpan data pribadi & pemilik BPKB",
+          store: "CDM",
+          tags: ["pii", "ro"],
+          apa: "Screening diulang karena data bisa berubah setelah cek, dan endpoint simpan bisa dipanggil tanpa cek. Tahap LEADS, CUST_NO masih kosong. Customer lama: kolom yang tidak dikirim diisi dari golden record, termasuk anggota keluarga.",
+          data: "MST_CUST_IND_LOS (LEADS), MST_APPL_ASSET_OWNER, MST_APPL_FAMILY_MEMBER (salinan keluarga untuk RO), MST_CUST_IND_LOS_HIS.",
+          api: [
+            [
+              "POST /cdm/v1/dtot",
+              "9.1 · Diulang saat simpan. Harus CLEAR, kalau tidak LOS-422-01.",
+            ],
+            [
+              "POST /cdm/v1/blacklist",
+              "9.2 · Paralel dengan DTTOT. Harus CLEAR.",
+            ],
+            [
+              "PUT /cdm/v1/applications/{applNo}/customer",
+              "11.1 · Simpan data pribadi dan pemilik BPKB dengan appl_stage = LEADS.",
+            ],
+          ],
+        },
+        {
+          id: "n9",
+          lane: "los",
+          col: "leads",
+          slot: 1,
+          t: "Simpan produk & objek",
+          store: "LOS",
+          tags: RO,
+          apa: "Ditulis setelah CDM sukses. Hanya data proses, tanpa data pribadi. Tidak ada baris collateral; collateral dibentuk dari objek di Order.",
+          data: "TRN_LEADS_ORDER (followup_status = NEW), TRN_LEADS_OBJ.",
+          api: [],
+        },
+        {
+          id: "nf",
+          lane: "ptg",
+          col: "leads",
+          slot: 1,
+          kind: "gate",
+          t: "Customer minat?",
+          tags: ["ro", "batal"],
+          apa: "Petugas mem-follow-up customer. Masih ragu: OPPORTUNITY, follow up lagi nanti (boleh berulang). Tidak minat: NOT_INTEREST, leads gugur. Minat: kirim ke Prospect. Selama masih Leads, data bisa diubah atau leads dihapus.",
+          data: "TRN_LEADS_ORDER.followup_status",
+          api: [
+            [
+              "PATCH /los/v1/leads/{applNo}/follow-up-status",
+              "4.7 · Catat OPPORTUNITY atau NOT_INTEREST. Tidak memanggil CDM.",
+            ],
+            [
+              "PATCH /los/v1/leads/{applNo}",
+              "4.5 · (alternatif) Ubah data leads. Data pribadi yang berubah diteruskan ke CDM 11.3.",
+            ],
+            [
+              "DELETE /los/v1/leads/{applNo}",
+              "4.6 · (alternatif) Hapus leads. CDM 11.4 menghapus data pribadi pengajuan.",
+            ],
+          ],
+        },
+        {
+          id: "ngg",
+          lane: "cust",
+          col: "leads",
+          slot: 1,
+          kind: "end",
+          num: "x",
+          t: "Tidak minat: leads gugur",
+          tags: ["batal"],
+          apa: "followup_status = NOT_INTEREST. Data pribadi pengajuan di CDM dibersihkan job retensi; tabel LOS tidak disentuh.",
+          data: "TRN_LEADS_ORDER.followup_status = NOT_INTEREST",
+          api: [],
+        },
+        {
+          id: "n10",
+          lane: "ptg",
+          col: "leads",
+          slot: 2,
+          t: "Kirim ke Prospect",
+          tags: RO,
+          apa: "Leads ditandai siap jadi prospect dan masuk worklist Prospect. Tahap di CDM tetap LEADS sampai prospect disimpan.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "POST /los/v1/leads/send-to-prospect",
+              "4.8 · Syarat followup_status NEW atau OPPORTUNITY. Tidak memanggil CDM.",
+            ],
+          ],
+        },
+        {
+          id: "n11",
+          lane: "los",
+          col: "leads",
+          slot: 2,
+          t: "Status INTEREST, masuk worklist Prospect",
+          store: "LOS",
+          tags: RO,
+          apa: "Tabel TRN_PROSPECT_* belum dibuat; dibuat saat prospect disimpan (5.9).",
+          data: "TRN_LEADS_ORDER.followup_status = INTEREST",
+          api: [],
+        },
+      ];
+
+      const custTambahan = {
+        id: "n12",
+        lane: "cust",
+        col: "pros",
+        t: "Lengkapi KK, pekerjaan, penghasilan, keluarga",
+        tags: ["pii", "ro"],
+        apa: "Data tambahan untuk analisis kredit: kontak tambahan, KK, NPWP, data diri, pekerjaan, gaji, pasangan, kontak darurat, rekening.",
+        data: "–",
+        api: [],
+      };
+
+      const prosLeadsNodes = [
+        custTambahan,
+        {
+          id: "n13",
+          lane: "ptg",
+          col: "pros",
+          t: "Buka dari worklist, pilih dealer, simpan Prospect",
+          tags: RO,
+          apa: "Form diisi awal dari data leads (data customer tersamar sesuai role). Dealer dipilih di sini karena belum dipilih di Leads. Data customer yang dikirim cukup yang baru atau berubah; identitas masih boleh dikoreksi karena CUST_NO belum ada.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "GET /los/v1/leads/{applNo}",
+              "4.4 · Isi awal form: data leads dari LOS, data customer dari CDM 11.2.",
+            ],
+            [
+              "GET /los/v1/suppliers",
+              "5.1 · Daftar dealer aktif untuk dropdown, diteruskan ke CDM 12.1.",
+            ],
+            [
+              "PUT /los/v1/prospects/{applNo}",
+              "5.9 · Simpan prospect dari Leads. APPL_NO tetap sama dengan leads-nya.",
+            ],
+          ],
+        },
+        {
+          id: "n14",
+          lane: "cdm",
+          col: "pros",
+          t: "Simpan data tambahan, tetapkan CUST_NO",
+          store: "CDM",
+          tags: ["pii", "ro"],
+          apa: "Screening diulang hanya kalau identitas dikoreksi; kalau tidak, hasil screening saat Leads yang berlaku. Perubahan diterapkan dulu, lalu CUST_NO ditetapkan dari NIK terbaru: nomor lama untuk customer lama, nomor baru untuk customer baru.",
+          data: "MST_CUST_IND_LOS (data tambahan, CUST_NO, PROSPECT), MST_APPL_ASSET_OWNER (kalau berubah), MST_CUST_IND_LOS_HIS.",
+          api: [
+            [
+              "GET /cdm/v1/applications/{applNo}/customer",
+              "11.2 · Dipanggil oleh 4.4 untuk isi awal form, tersamar sesuai role.",
+            ],
+            ["GET /cdm/v1/suppliers", "12.1 · Dipanggil oleh 5.1."],
+            [
+              "POST /cdm/v1/dtot",
+              "9.1 · Hanya kalau identitas dikoreksi di payload.",
+            ],
+            [
+              "POST /cdm/v1/blacklist",
+              "9.2 · Hanya kalau identitas dikoreksi di payload.",
+            ],
+            [
+              "PATCH /cdm/v1/applications/{applNo}/customer",
+              "11.3 · Data tambahan dan koreksi dengan appl_stage = PROSPECT, sekaligus menetapkan CUST_NO.",
+            ],
+          ],
+        },
+        {
+          id: "n15",
+          lane: "los",
+          col: "pros",
+          slot: 1,
+          t: "Salin objek Leads, simpan Prospect",
+          store: "LOS",
+          tags: RO,
+          apa: "Ditulis setelah CDM sukses, dalam satu transaksi. Objek disalin dari Leads; field objek di payload menimpa salinan. TRN_LEADS_* tidak diubah. Tidak ada baris collateral.",
+          data: "TRN_LEADS_OBJ → TRN_PROSPECT_OBJ, TRN_PROSPECT_ORDER (CUST_NO), TRN_PROSPECT_MKT_SCHEME, TRN_PROSPECT_SCORING (FLAG_SOURCE_LEAD = Y).",
+          api: [],
+        },
+      ];
+
+      const prosDirectNodes = [
+        custTambahan,
+        {
+          id: "n13",
+          lane: "ptg",
+          col: "pros",
+          t: "Pilih dealer, simpan Prospect",
+          tags: RO,
+          apa: "Semua data dikirim sekali: data customer, pemilik BPKB, pengajuan, objek, dan marketing scheme. Untuk customer lama, field tersamar yang dikonfirmasi cukup dicantumkan di confirmed_fields. APPL_NO dibuat LOS saat simpan.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "GET /los/v1/suppliers",
+              "5.1 · Daftar dealer aktif untuk dropdown, diteruskan ke CDM 12.1.",
+            ],
+            [
+              "POST /los/v1/prospects",
+              "5.2 · Simpan prospect tanpa Leads. Client wajib menjalankan cek customer (4.1) lebih dulu.",
+            ],
+          ],
+        },
+        {
+          id: "n14",
+          lane: "cdm",
+          col: "pros",
+          t: "Screening ulang, simpan data pribadi, tetapkan CUST_NO",
+          store: "CDM",
+          tags: ["pii", "ro"],
+          apa: "Screening diulang saat simpan. Dalam satu transaksi CDM: CUST_NO ditetapkan (nomor lama untuk customer lama, baru untuk customer baru), kolom yang tidak dikirim diisi dari golden record untuk RO, lalu data pribadi dan pemilik BPKB disimpan.",
+          data: "MST_CUST_IND_LOS (CUST_NO, PROSPECT), MST_APPL_ASSET_OWNER, MST_APPL_FAMILY_MEMBER, MST_CUST_IND_LOS_HIS.",
+          api: [
+            ["GET /cdm/v1/suppliers", "12.1 · Dipanggil oleh 5.1."],
+            [
+              "POST /cdm/v1/dtot",
+              "9.1 · Diulang saat simpan. Harus CLEAR, kalau tidak LOS-422-01.",
+            ],
+            [
+              "POST /cdm/v1/blacklist",
+              "9.2 · Paralel dengan DTTOT. Harus CLEAR.",
+            ],
+            [
+              "PUT /cdm/v1/applications/{applNo}/customer",
+              "11.1 · Simpan data pribadi dengan appl_stage = PROSPECT, sekaligus menetapkan CUST_NO.",
+            ],
+          ],
+        },
+        {
+          id: "n15",
+          lane: "los",
+          col: "pros",
+          slot: 1,
+          t: "Simpan pengajuan, objek, scheme, skor",
+          store: "LOS",
+          tags: RO,
+          apa: "Ditulis setelah CDM sukses, dalam satu transaksi, langsung dengan CUST_NO. Tabel TRN_LEADS_* tidak dipakai. Tidak ada baris collateral.",
+          data: "TRN_PROSPECT_ORDER, TRN_PROSPECT_OBJ, TRN_PROSPECT_MKT_SCHEME, TRN_PROSPECT_SCORING (FLAG_SOURCE_LEAD = N).",
+          api: [],
+        },
+      ];
+
+      const commonNodes = [
+        {
+          id: "n16",
+          lane: "ptg",
+          col: "lengkapi",
+          t: "Isi struktur kredit, asuransi, keluarga",
+          tags: RO,
+          apa: "Ditulis per bagian (modular). Struktur kredit dan asuransi disimpan di LOS; anggota keluarga sesuai KK disimpan di CDM (MST_APPL_FAMILY_MEMBER) dan disalin ke golden record saat Generate AR. Setelah setiap simpan, form disegarkan dengan satu GET detail. Data prospect lain bisa diubah di sini juga.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "POST /los/v1/prospects/{applNo}/credit-structure",
+              "6.1 · Simpan struktur kredit (satu per prospect). Ubah lewat 6.3 PATCH.",
+            ],
+            [
+              "POST /los/v1/prospects/{applNo}/insurances",
+              "7.1 · Tambah asuransi customer per produk. Ubah 7.4 PATCH, hapus 7.5 DELETE.",
+            ],
+            [
+              "POST /los/v1/prospects/{applNo}/objects/{seqNo}/insurance",
+              "7.6 · Simpan asuransi objek. Ubah 7.8 PATCH.",
+            ],
+            [
+              "POST /los/v1/prospects/{applNo}/family-members",
+              "5.10 · Tambah anggota keluarga, diteruskan ke CDM 11.6. Ubah lewat 5.11 PATCH (CDM 11.7). Hapus belum tersedia.",
+            ],
+            [
+              "POST /cdm/v1/applications/{applNo}/family-members",
+              "11.6 · Simpan anggota keluarga pengajuan, seq_no dibuat CDM. Hanya tahap PROSPECT.",
+            ],
+            [
+              "PATCH /los/v1/prospects/{applNo}",
+              "5.5 · Ubah data prospect lain. Data pribadi yang berubah diteruskan ke CDM 11.3.",
+            ],
+            [
+              "GET /los/v1/prospects/{applNo}",
+              "5.4 · Detail lengkap dalam satu GET, data customer dari CDM 11.2. Kalau CDM mati, seluruh detail gagal.",
+            ],
+          ],
+        },
+        {
+          id: "n17",
+          lane: "los",
+          col: "lengkapi",
+          t: "Simpan struktur kredit & asuransi",
+          store: "LOS",
+          tags: RO,
+          apa: "Struktur kredit dan asuransi tidak memanggil CDM.",
+          data: "TRN_PROSPECT_STRUC_CRDT, TRN_PROSPECT_INS, TRN_PROSPECT_INS_OBJ.",
+          api: [],
+        },
+        {
+          id: "n18",
+          lane: "ptg",
+          col: "appr",
+          kind: "gate",
+          t: "Disetujui?",
+          tags: ["ro", "batal"],
+          apa: "Ya: approve, prospect dianggap lengkap (LOS tidak memeriksa kelengkapan, syarat tahap dijaga CDM). Tidak: dibatalkan (tetap tercatat batal). Salah input atau duplikat: dihapus (soft delete).",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "POST /los/v1/prospects/{applNo}/approval",
+              "5.7 · Approve dan salin snapshot prospect menjadi Order. approve_by dari token user.",
+            ],
+            [
+              "POST /los/v1/prospects/{applNo}/cancellation",
+              "5.8 · (tidak disetujui) Batalkan prospect.",
+            ],
+            [
+              "DELETE /los/v1/prospects/{applNo}",
+              "5.6 · (salah input) Soft delete: hanya induknya yang ditandai terhapus.",
+            ],
+          ],
+        },
+        {
+          id: "n19",
+          lane: "cdm",
+          col: "appr",
+          t: "Ubah tahap ke ORDER",
+          store: "CDM",
+          tags: RO,
+          apa: "Dipanggil sebelum LOS menulis. Data pribadi tidak dikirim ulang; hanya tahapnya yang berubah. Tahap yang tidak sah (termasuk prospect batal atau terhapus) ditolak CDM-409-02.",
+          data: "MST_CUST_IND_LOS.APPL_STAGE = ORDER, MST_CUST_IND_LOS_HIS.",
+          api: [
+            [
+              "PATCH /cdm/v1/applications/{applNo}/customer",
+              "11.3 · appl_stage = ORDER.",
+            ],
+          ],
+        },
+        {
+          id: "n20",
+          lane: "los",
+          col: "appr",
+          slot: 1,
+          t: "Buat order, salin 6 tabel",
+          store: "LOS",
+          tags: RO,
+          apa: "Satu transaksi LOS. Kolom yang namanya sama disalin dari TRN_PROSPECT_ORDER (SUPPLIER_CODE → SUPP_CODE, CUSTOMER_CATEGORY → CUST_CATEGORY). Prospect menjadi baca saja. Collateral belum dibuat.",
+          data: "TRN_ORDER (APPROVE_* dari token, ORDER_STAT = APPROVED), TRN_ORDER_OBJ, _SCORING, _INS, _INS_OBJ, _STRUC_CRDT, _MKT_SCHEME.",
+          api: [],
+        },
+        {
+          id: "n21",
+          lane: "ptg",
+          col: "ord",
+          t: "Verifikasi: no. mesin, rangka, PO, koreksi",
+          tags: ["ro", "batal"],
+          apa: "Isi identitas kendaraan dan dokumen per objek, koreksi data customer, data keuangan hasil verifikasi, dan data jamaah untuk produk haji/umrah. Boleh diulang selama belum AR. Order juga bisa dibatalkan di sini.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "GET /los/v1/orders/{applNo}",
+              "8.2 · Detail order lengkap dalam satu GET, data customer dari CDM 11.2.",
+            ],
+            [
+              "PATCH /los/v1/orders/{applNo}",
+              "8.3 · Simpan verifikasi. Objek kendaraan wajib punya NOSIN dan NOKA.",
+            ],
+            [
+              "POST /los/v1/orders/{applNo}/cancellation",
+              "8.5 · (alternatif) Batalkan order sebelum AR, wajib cancel_reason.",
+            ],
+          ],
+        },
+        {
+          id: "n22",
+          lane: "cdm",
+          col: "ord",
+          kind: "gate",
+          t: "Agunan bebas?",
+          tags: RO,
+          apa: "Per objek kendaraan: NOSIN/NOKA tidak boleh sedang dijaminkan di kontrak aktif lain. Kalau dijaminkan, simpan ditolak (LOS-422-02) dan tidak ada yang ditulis; petugas memperbaiki data kendaraan. Produk tanpa kendaraan dilewati.",
+          data: "Hanya dibaca: TRN_CONTRACT_COLLATERAL, MST_CONTRACT.",
+          api: [
+            [
+              "POST /cdm/v1/collateral-checks",
+              "API-CDM API 11 · Hasil pledged dan kontrak yang memakai agunan itu. CUST_NO pemilik kontrak lain tidak dikirim.",
+            ],
+          ],
+        },
+        {
+          id: "n23",
+          lane: "cdm",
+          col: "ord",
+          slot: 1,
+          t: "Simpan koreksi, data keuangan, jamaah",
+          store: "CDM",
+          tags: ["pii", "ro"],
+          apa: "Hanya kalau ada yang berubah. Kolom identitas tetap ditolak karena CUST_NO sudah ada.",
+          data: "MST_CUST_IND_LOS (koreksi, MONTHLY_EXPENSE, OTHER_INCOME, SERVICE_YEAR), MST_CUST_IND_LOS_HIS, MST_APPL_PILGRIM.",
+          api: [
+            [
+              "PATCH /cdm/v1/applications/{applNo}/customer",
+              "11.3 · Koreksi data customer dan data keuangan hasil verifikasi.",
+            ],
+            [
+              "PUT /cdm/v1/applications/{applNo}/pilgrim",
+              "API-CDM API 10 · Data jamaah, hanya produk haji/umrah.",
+            ],
+          ],
+        },
+        {
+          id: "n24",
+          lane: "los",
+          col: "ord",
+          slot: 1,
+          t: "Simpan objek, bentuk collateral, VERIFIED",
+          store: "LOS",
+          tags: RO,
+          apa: "Satu transaksi LOS. Collateral dibentuk dari objek: satu baris per objek kendaraan (COLL_TYPE terisi), dihubungkan lewat APPL_SEQ_NO = SEQ_NO. Identitas kendaraan dan merek tetap di objek.",
+          data: "TRN_ORDER_OBJ (NOSIN, NOKA, PO, dokumen), TRN_ORDER_COLLATERAL, TRN_ORDER (ORDER_STAT = VERIFIED, VERIFY_BY, VERIFY_DATE).",
+          api: [],
+        },
+        {
+          id: "n25",
+          lane: "ptg",
+          col: "ar",
+          t: "Generate AR",
+          tags: RO,
+          apa: "Syarat ORDER_STAT = VERIFIED.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "POST /los/v1/orders/{applNo}/contract",
+              "8.4 · Bentuk kontrak: nomor kontrak dari LOS, pencatatan di CDM, lalu order dikunci.",
+            ],
+          ],
+        },
+        {
+          id: "n26",
+          lane: "los",
+          col: "ar",
+          t: "Buat & simpan nomor kontrak, susun payload",
+          store: "LOS",
+          tags: RO,
+          apa: "Nomor kontrak disimpan dulu (transaksi pendek) dan dipakai lagi kalau aksi diulang. Payload dari tabel Order: cabang, perusahaan, tenor, angsuran, pokok, total bunga, dan collaterals (collateral digabung objek: NOSIN, NOKA, no. polisi, no. BPKB, merek). Tanpa data pribadi.",
+          data: "TRN_ORDER.CONTRACT_NO",
+          api: [],
+        },
+        {
+          id: "n27",
+          lane: "cdm",
+          col: "ar",
+          t: "Golden record, kontrak, agunan, keluarga, riwayat",
+          store: "CDM",
+          tags: ["pii", "ro"],
+          apa: "Satu transaksi CDM. Customer baru: golden record dibuat. Customer lama: hanya kolom yang berubah di-UPDATE, kolom identitas tetap tidak ditimpa (atau NO_CHANGE). Agunan kontrak menyimpan NOSIN, NOKA, no. polisi, no. BPKB, merek di V01–V05. Riwayat telepon/alamat/email bertambah kalau berubah. Anggota keluarga disalin. Pengajuan terkunci (AR). Idempotent per nomor kontrak.",
+          data: "MST_CUST_IND, MST_CONTRACT, MST_CUST_IND_VER_STORE, TRN_CONTRACT_COLLATERAL, MST_PHONE_HIS, MST_ADDRS_HIS, MST_EMAIL_HIS, MST_CUST_FAMILY_MEMBER, MST_CUST_IND_LOS (AR), MST_CUST_IND_LOS_HIS.",
+          api: [
+            [
+              "POST /cdm/v1/contracts",
+              "API-CDM API 12 · Catat kontrak, golden record, dan agunan kontrak. Masih mewajibkan minimal 1 collateral (celah untuk haji/umrah).",
+            ],
+          ],
+        },
+        {
+          id: "n28",
+          lane: "los",
+          col: "ar",
+          slot: 1,
+          t: "Kunci order: AR",
+          store: "LOS",
+          tags: RO,
+          apa: "Setelah CDM sukses, satu transaksi LOS. Kalau langkah ini gagal, aksi diulang: nomor kontrak sama, CDM mengembalikan hasil pertama.",
+          data: "TRN_ORDER.ORDER_STAT = AR, TRN_ORDER_COLLATERAL.CONTRACT_NO dan CONTRACT_DATE.",
+          api: [],
+        },
+        {
+          id: "n29",
+          lane: "ptg",
+          col: "batal",
+          t: "Batalkan atau hapus pengajuan",
+          tags: ["batal"],
+          apa: "Dari Prospect (batal atau hapus) atau dari Order sebelum AR (batal). Leads yang belum lanjut dihapus lewat 4.6 atau gugur lewat follow up.",
+          data: "Lihat langkah berikutnya.",
+          api: [
+            [
+              "POST /los/v1/prospects/{applNo}/cancellation",
+              "5.8 · Batal prospect, tetap tercatat sebagai batal.",
+            ],
+            [
+              "DELETE /los/v1/prospects/{applNo}",
+              "5.6 · Hapus prospect (soft delete), dianggap tidak pernah ada.",
+            ],
+            [
+              "POST /los/v1/orders/{applNo}/cancellation",
+              "8.5 · Batal order sebelum AR.",
+            ],
+          ],
+        },
+        {
+          id: "n30",
+          lane: "cdm",
+          col: "batal",
+          t: "Ubah tahap ke BATAL",
+          store: "CDM",
+          tags: ["batal"],
+          apa: "Dipanggil sebelum LOS menulis. Pengajuan tidak bisa diproses lagi. Data pribadi belum dihapus.",
+          data: "MST_CUST_IND_LOS.APPL_STAGE = BATAL, MST_CUST_IND_LOS_HIS.",
+          api: [
+            [
+              "PATCH /cdm/v1/applications/{applNo}/customer",
+              "11.3 · appl_stage = BATAL.",
+            ],
+          ],
+        },
+        {
+          id: "n32",
+          lane: "los",
+          col: "batal",
+          slot: 1,
+          t: "Catat batal atau soft delete",
+          store: "LOS",
+          tags: ["batal"],
+          apa: "Batal prospect dan hapus prospect hanya mengubah induknya; tabel turunan tidak disentuh dan dibersihkan job retensi nanti.",
+          data: "Batal prospect: TRN_PROSPECT_SCORING.TREATMENT = BATAL · Hapus prospect: TRN_PROSPECT_ORDER.DELETED_BY, DELETED_DATE · Batal order: TRN_ORDER.ORDER_STAT = BATAL, CANCEL_REASON.",
+          api: [],
+        },
+        {
+          id: "n31",
+          lane: "cdm",
+          col: "batal",
+          row: 1,
+          t: "Job retensi: hapus data pribadi",
+          store: "CDM",
+          tags: ["batal", "pii"],
+          apa: "Pengajuan LEADS yang gugur dan BATAL yang lewat masa retensi dihapus dari CDM, termasuk pemilik BPKB, keluarga, jamaah, dan riwayat pengajuan. Kalau LOS membuka pengajuan itu, CDM menjawab 404. Masa retensi belum diputuskan.",
+          data: "MST_CUST_IND_LOS, MST_APPL_*, MST_CUST_IND_LOS_HIS (hapus).",
+          api: [],
+        },
+      ];
+
+      // rute: down/up = vertikal (dx geser), right = horizontal, elbow = lewat celah kolom (dx geser), elbowUp = ke node di atas slot lain,
+      // bottomUp = keluar bawah lalu naik ke node lain, top = lewat atas lane yang sama. o.no = filter yang tidak menyorot garis ini
+      const cekEdges = [
+        ["n1", "n2", "down"],
+        ["n2", "n3", "down"],
+        ["n3", "nx", "elbowUp", { label: "tidak" }],
+        ["n3", "n4", "down", { label: "ya" }],
+        ["n4", "n5", "right", { label: "ya" }],
+        [
+          "n4",
+          "ng",
+          "bottomUp",
+          { label: "tidak (customer baru)", no: ["ro"] },
+        ],
+        ["n5", "n6", "elbow", { slotEdge: 2 }],
+        ["n6", "ng", "down"],
+      ];
+      const leadsEdges = [
+        ["ng", "n7", "right"],
+        ["n7", "n8", "down"],
+        ["n8", "n9", "elbowUp"],
+        ["n9", "nf", "up"],
+        ["nf", "ngg", "up", { label: "tidak", tags: ["batal"] }],
+        ["nf", "n10", "right", { label: "ya" }],
+        ["n10", "n11", "down"],
+        ["n11", "n13", "elbow"],
+        ["n12", "n13", "down"],
+        ["n13", "n14", "down"],
+        ["n14", "n15", "elbowUp"],
+      ];
+      const directEdges = [
+        ["ng", "n13", "right"],
+        ["n12", "n13", "down"],
+        ["n13", "n14", "down"],
+        ["n14", "n15", "elbowUp"],
+      ];
+      const commonEdges = [
+        ["n15", "n16", "elbow"],
+        ["n16", "n17", "down"],
+        ["n17", "n18", "elbow"],
+        ["n18", "n19", "down", { label: "ya" }],
+        ["n19", "n20", "elbowUp"],
+        ["n20", "n21", "elbow"],
+        [
+          "n18",
+          "n29",
+          "top",
+          {
+            label: "tidak (batal / hapus)",
+            dash: 1,
+            dy: 9,
+            dx2: -16,
+            tags: ["batal"],
+          },
+        ],
+        [
+          "n21",
+          "n29",
+          "top",
+          { label: "batal", dash: 1, dy: 19, dx2: 16, tags: ["batal"] },
+        ],
+        ["n21", "n22", "down", { dx: 22 }],
+        ["n22", "n21", "up", { dx: -22, label: "tidak", anchor: "end" }],
+        ["n22", "n23", "right", { label: "ya" }],
+        ["n23", "n24", "up"],
+        ["n24", "n25", "elbow"],
+        ["n25", "n26", "down"],
+        ["n26", "n27", "down"],
+        ["n27", "n28", "elbowUp"],
+        ["n29", "n30", "down", { tags: ["batal"] }],
+        ["n30", "n32", "elbowUp", { tags: ["batal"] }],
+        [
+          "n30",
+          "n31",
+          "down",
+          { dash: 1, label: "lewat masa retensi", ly: 26, tags: ["batal"] },
+        ],
+      ];
+
+      const SCENARIOS = {
+        leads: {
+          intro:
+            "Customer dicatat dulu sebagai Leads, di-follow-up, lalu dikirim ke Prospect (4.8) dan disimpan sebagai prospect lewat 5.9. Data customer sudah ada di CDM sejak Leads; CUST_NO ditetapkan saat prospect disimpan.",
+          cols: [C.cek, C.leads, C.prosL, C.lengkapi, C.appr, C.ord, C.ar, C.batal],
+          nodes: [
+            ...cekNodes(
+              "Isi form Leads: produk, DP, tenor, pemilik BPKB",
+              "Petugas melengkapi produk, objek, struktur awal (tenor, angsuran, DP), dan pemilik BPKB (sama dengan customer atau orang lain). Dealer belum dipilih.",
+            ),
+            ...leadsNodes,
+            ...prosLeadsNodes,
+            ...commonNodes,
+          ],
+          edges: [...cekEdges, ...leadsEdges, ...commonEdges],
+        },
+        prospect: {
+          intro:
+            "Customer datang langsung, tanpa Leads. Setelah cek customer, semua data diisi di form Prospect dan disimpan sekali lewat 5.2. CUST_NO ditetapkan saat itu juga. Setelah tersimpan, langkahnya sama dengan jalur dari Leads.",
+          cols: [C.cek, C.prosD, C.lengkapi, C.appr, C.ord, C.ar, C.batal],
+          nodes: [
+            ...cekNodes(
+              "Isi form Prospect lengkap",
+              "Identitas, kontak, alamat, data tambahan, pemilik BPKB, data pengajuan, objek, dan marketing scheme diisi di satu form. Untuk customer lama, form berisi prefill tersamar.",
+            ),
+            ...prosDirectNodes,
+            ...commonNodes,
+          ],
+          edges: [...cekEdges, ...directEdges, ...commonEdges],
+        },
+      };
+
+      const SLOT = 185,
+        HEAD = 78,
+        PAD_T = 32,
+        ROW = 104,
+        PAD_B = 30,
+        ROWH = 80;
+      const SIZE = { step: [156, 64], gate: [142, 80], end: [142, 46] };
+      const LANE_COLOR = {
+        cust: "--cust",
+        ptg: "--ptg",
+        los: "--los",
+        cdm: "--cdm",
+      };
+      const $ = (s) => document.querySelector(s);
+      const cv = $("#cv");
+      let S = null; // skenario yang sedang tampil: cols, lanes, nodes, edges, R, W, H
+      let filter = "all",
+        fit = false;
+
+      // ---------- geometri ----------
+      function layout(key) {
+        const sc = SCENARIOS[key];
+        const cols = sc.cols.map((c) => ({ ...c })),
+          nodes = sc.nodes.map((n) => ({ ...n })),
+          lanes = LANES.map((l) => ({ ...l }));
+        let x = 0;
+        cols.forEach((c) => {
+          c.x = x;
+          c.w = c.slots * SLOT;
+          x += c.w;
+        });
+        let y = HEAD;
+        lanes.forEach((l) => {
+          const rows = Math.max(
+            1,
+            ...nodes
+              .filter((n) => n.lane === l.id)
+              .map((n) => (n.row || 0) + 1),
+          );
+          l.y = y;
+          l.h = PAD_T + (rows - 1) * ROW + ROWH + PAD_B;
+          y += l.h;
+        });
+        const col = (id) => cols.find((c) => c.id === id),
+          lane = (id) => lanes.find((l) => l.id === id);
+        const R = {};
+        let k = 0;
+        nodes.forEach((n) => {
+          n.kind = n.kind || "step";
+          if (!n.num) n.num = String(++k);
+          const c = col(n.col),
+            l = lane(n.lane),
+            [w, h] = SIZE[n.kind];
+          const cx = c.x + ((n.slot || 0) + 0.5) * SLOT,
+            top = l.y + PAD_T + (n.row || 0) * ROW + (ROWH - h) / 2;
+          R[n.id] = {
+            x: cx - w / 2,
+            y: top,
+            w,
+            h,
+            cx,
+            cy: top + h / 2,
+            gate: n.kind === "gate",
+            col: c,
+            lane: l,
+          };
+        });
+        S = { key, sc, cols, lanes, nodes, edges: sc.edges, R, W: x, H: y, col, lane };
+      }
+      // titik di tepi atas/bawah: untuk belah ketupat, tepinya miring
+      const topAt = (r, dx) =>
+        r.gate ? r.y + (r.h / 2) * Math.min(1, Math.abs(dx) / (r.w / 2)) : r.y;
+      const botAt = (r, dx) =>
+        r.gate
+          ? r.y + r.h - (r.h / 2) * Math.min(1, Math.abs(dx) / (r.w / 2))
+          : r.y + r.h;
+      function points(f, t, route, o) {
+        const a = S.R[f],
+          b = S.R[t],
+          dx = o.dx || 0,
+          gx =
+            (o.slotEdge != null
+              ? a.col.x + o.slotEdge * SLOT
+              : a.col.x + a.col.w) + dx;
+        switch (route) {
+          case "down":
+            return [
+              [a.cx + dx, botAt(a, dx)],
+              [b.cx + dx, topAt(b, dx)],
+            ];
+          case "up":
+            return [
+              [a.cx + dx, topAt(a, dx)],
+              [b.cx + dx, botAt(b, dx)],
+            ];
+          case "right":
+            return [
+              [a.x + a.w, a.cy],
+              [b.x, b.cy],
+            ];
+          case "elbow":
+            return [
+              [a.x + a.w, a.cy],
+              [gx, a.cy],
+              [gx, b.cy],
+              [b.x, b.cy],
+            ];
+          case "elbowUp":
+            return [
+              [a.x + a.w, a.cy],
+              [b.cx, a.cy],
+              [b.cx, b.y + b.h],
+            ];
+          case "bottomUp": {
+            const by = a.y + a.h + 16;
+            return [
+              [a.cx, a.y + a.h],
+              [a.cx, by],
+              [b.cx, by],
+              [b.cx, botAt(b, 0)],
+            ];
+          }
+          case "top": {
+            const ty = a.lane.y + o.dy,
+              bx = b.cx + (o.dx2 || 0),
+              ax = a.cx + (o.dxa || 0);
+            return [
+              [ax, topAt(a, o.dxa || 0)],
+              [ax, ty],
+              [bx, ty],
+              [bx, b.y],
+            ];
+          }
+        }
+      }
+      function labelPos(p, o) {
+        const [[x1, y1], [x2, y2]] = p,
+          sx = o.anchor === "end" ? -6 : 6;
+        if (o.labelSeg != null) {
+          const [[ax, ay], [bx, by]] = [p[o.labelSeg], p[o.labelSeg + 1]];
+          return [(ax + bx) / 2, (ay + by) / 2 - 5];
+        }
+        if (x1 === x2) return [x1 + sx, y1 + (y2 > y1 ? o.ly || 14 : -6)];
+        return [x1 + 8, y1 - 6];
+      }
+
+      // ---------- gambar ----------
+      function draw() {
+        const { cols, lanes, nodes, edges, R, W, H } = S;
+        cv.style.width = W + "px";
+        cv.style.height = H + "px";
+        let html = "";
+        lanes.forEach((l, i) => {
+          html += `<div class="band" style="top:${l.y}px;height:${l.h}px;width:${W}px;background:var(${i % 2 ? "--band2" : "--band1"});border-top:1px solid var(--line)"></div>`;
+        });
+        cols.forEach((c, i) => {
+          const t0 = i && cols[i - 1].group === c.group ? 40 : 0;
+          if (c.side)
+            html += `<div class="sidecol" style="left:${c.x}px;top:0;width:${c.w}px;height:${H}px"></div>`;
+          if (c.x)
+            html += `<div class="colsep" style="left:${c.x}px;top:${t0}px;height:${H - t0}px"></div>`;
+          html += `<div class="chead" style="left:${c.x}px;top:38px;width:${c.w}px">${c.sub ? `<span>${c.sub}</span>` : ""}<span class="stage">${c.stage}</span></div>`;
+        });
+        const groups = [];
+        cols.forEach((c) => {
+          const g = groups[groups.length - 1];
+          if (g && g.name === c.group) g.w += c.w;
+          else groups.push({ name: c.group, x: c.x, w: c.w });
+        });
+        groups.forEach((g) => {
+          html += `<div class="ghead" style="left:${g.x}px;top:12px;width:${g.w}px">${g.name}</div>`;
+        });
+        let svg = `<svg class="edges" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--edge);stroke:none"/></marker>
+  <marker id="arh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent);stroke:none"/></marker></defs>`;
+        edges.forEach(([f, t, route, o = {}], i) => {
+          const p = points(f, t, route, o),
+            d = "M" + p.map((q) => q.join(",")).join(" L");
+          const [lx, ly] = labelPos(p, o);
+          svg += `<g class="edge" data-i="${i}"><path class="${o.dash ? "dash" : ""}" d="${d}" marker-end="url(#ar)"/>${o.label ? `<text x="${lx}" y="${ly}"${o.anchor || o.labelSeg != null ? ` text-anchor="${o.labelSeg != null ? "middle" : o.anchor}"` : ""}>${o.label}</text>` : ""}</g>`;
+        });
+        svg += "</svg>";
+        html += svg;
+        nodes.forEach((n) => {
+          const r = R[n.id],
+            color = `var(${LANE_COLOR[n.lane]})`,
+            bg = `var(${LANE_COLOR[n.lane]}-bg)`;
+          const db = n.store
+            ? `<span class="db" style="background:var(--${n.store.toLowerCase()}-bg);color:var(--${n.store.toLowerCase()})">DB ${n.store}</span>`
+            : "";
+          const pos = `left:${r.x}px;top:${r.y}px;width:${r.w}px;height:${r.h}px`;
+          if (n.kind === "gate")
+            html += `<button class="node gate" data-id="${n.id}" style="${pos}" aria-label="${n.num}. ${n.t}"><svg viewBox="0 0 ${r.w} ${r.h}" width="${r.w}" height="${r.h}"><polygon points="${r.w / 2},1 ${r.w - 1},${r.h / 2} ${r.w / 2},${r.h - 1} 1,${r.h / 2}" style="fill:${bg};stroke:${color};stroke-width:1.5"/></svg><span class="num">${n.num}</span><span class="t">${n.t}</span></button>`;
+          else
+            html += `<button class="node ${n.kind}" data-id="${n.id}" style="${pos};border-left-color:${color}"><span class="num">${n.num}</span><span class="t">${n.t}</span>${db}</button>`;
+        });
+        cv.innerHTML = html;
+      }
+
+      // label lane (kiri, tidak ikut bergulir)
+      function renderLabels(s) {
+        $("#labels").innerHTML =
+          `<div class="hsp" style="height:${HEAD * s}px">Aktor</div>` +
+          S.lanes
+            .map(
+              (l) =>
+                `<div class="lane-lbl" style="height:${l.h * s}px;border-left-color:var(${LANE_COLOR[l.id]})"><b>${l.name}</b><span>${l.sub}</span>${l.store ? `<span class="store" style="background:var(${LANE_COLOR[l.id]}-bg);color:var(${LANE_COLOR[l.id]})"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><ellipse cx="5.5" cy="2.5" rx="5" ry="2" fill="none" stroke="currentColor"/><path d="M0.5 2.5v7c0 1.1 2.2 2 5 2s5-.9 5-2v-7" fill="none" stroke="currentColor"/></svg>${l.store} · ${l.storeNote}</span>` : ""}</div>`,
+            )
+            .join("");
+      }
+
+      // skala: 100% (bisa digulir) atau muat ke lebar layar
+      function applyScale() {
+        const avail = $("#vp").clientWidth,
+          s = fit ? Math.min(1, avail / S.W) : 1;
+        cv.style.transform = `scale(${s})`;
+        $("#sizer").style.width = S.W * s + "px";
+        $("#sizer").style.height = S.H * s + "px";
+        renderLabels(s);
+        $("#fit").classList.toggle("on", fit);
+        $("#fit").textContent = fit ? "Ukuran asli" : "Muat ke lebar layar";
+      }
+
+      // sorot alur
+      function applyFilter(f) {
+        filter = f;
+        document
+          .querySelectorAll("[data-f]")
+          .forEach((x) => x.classList.toggle("on", x.dataset.f === f));
+        const has = (id) =>
+          (S.nodes.find((m) => m.id === id).tags || []).includes(f);
+        S.nodes.forEach((n) =>
+          cv
+            .querySelector(`[data-id="${n.id}"]`)
+            .classList.toggle("dim", f !== "all" && !has(n.id)),
+        );
+        S.edges.forEach(([a, b, , o = {}], i) => {
+          const g = cv.querySelector(`.edge[data-i="${i}"]`),
+            on =
+              f !== "all" &&
+              !(o.no || []).includes(f) &&
+              ((o.tags || []).includes(f) || (has(a) && has(b)));
+          g.classList.toggle("dim", f !== "all" && !on);
+          g.classList.toggle("hi", on);
+          g.querySelector("path").setAttribute(
+            "marker-end",
+            on ? "url(#arh)" : "url(#ar)",
+          );
+        });
+      }
+
+      // daftar API: endpoint (warna LOS/CDM) + deskripsi
+      function epHtml(ep) {
+        const [m, ...p] = ep.split(" "),
+          path = p.join(" ");
+        return `<span class="ep ${path.startsWith("/cdm") ? "cdm" : "los"}"><b>${m}</b>${path}</span>`;
+      }
+      function apiList(n) {
+        if (!n.api.length)
+          return n.lane === "los" || n.lane === "cdm"
+            ? `<span class="empty">Tidak ada API sendiri; ditulis sebagai bagian dari API di langkah sebelumnya.</span>`
+            : `<span class="empty">Tidak memanggil API.</span>`;
+        return `<ul class="apis">${n.api.map(([ep, d]) => `<li>${epHtml(ep)}<span class="desc">${d}</span></li>`).join("")}</ul>`;
+      }
+
+      // detail langkah
+      function resetDetail() {
+        $("#detail").innerHTML =
+          `<p class="empty">Klik salah satu langkah untuk melihat apa yang terjadi, data yang ditulis, dan API yang dipanggil beserta deskripsinya.</p>`;
+      }
+      function select(id) {
+        const n = S.nodes.find((m) => m.id === id),
+          c = S.col(n.col);
+        cv.querySelectorAll(".node.sel").forEach((x) =>
+          x.classList.remove("sel"),
+        );
+        const el = cv.querySelector(`[data-id="${id}"]`);
+        el.classList.add("sel");
+        $("#detail").innerHTML =
+          `<h2>${n.num}. ${n.t}</h2><p class="meta">${S.lane(n.lane).name} · ${c.group}${c.sub ? " · " + c.sub : ""} · tahap <code>${c.stage}</code></p>
+    <dl><dt>Yang terjadi</dt><dd>${n.apa}</dd><dt>Data</dt><dd>${n.data}</dd><dt>API</dt><dd>${apiList(n)}</dd></dl>`;
+        return el;
+      }
+      cv.addEventListener("click", (e) => {
+        const el = e.target.closest(".node");
+        if (el) select(el.dataset.id);
+      });
+
+      // tabel urutan API untuk tab yang tampil
+      function renderApiTable() {
+        const rows = S.nodes.filter((n) => n.api.length);
+        const total = rows.reduce((s, n) => s + n.api.length, 0);
+        $("#apimeta").textContent =
+          `${total} pemanggilan API dari ${rows.length} langkah, urut sesuai nomor langkah. Hijau = API LOS (dipanggil client), ungu = API CDM (dipanggil service LOS). Klik nama langkah untuk menyorotnya di diagram.`;
+        $("#apitable").innerHTML =
+          `<thead><tr><th>Langkah</th><th>API</th><th>Deskripsi</th></tr></thead><tbody>` +
+          rows
+            .map((n) =>
+              n.api
+                .map(
+                  ([ep, d], i) =>
+                    `<tr>${i ? "" : `<td class="step" rowspan="${n.api.length}" data-id="${n.id}"><span class="n">${n.num}</span>${n.t}</td>`}<td class="ep">${epHtml(ep)}</td><td>${d}</td></tr>`,
+                )
+                .join(""),
+            )
+            .join("") +
+          `</tbody>`;
+      }
+      $("#apitable").addEventListener("click", (e) => {
+        const td = e.target.closest("td.step");
+        if (!td) return;
+        const el = select(td.dataset.id);
+        el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      });
+
+      // tab
+      function show(key) {
+        if (!SCENARIOS[key]) key = "leads";
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) =>
+            t.setAttribute("aria-selected", String(t.dataset.tab === key)),
+          );
+        $("#intro").textContent = SCENARIOS[key].intro;
+        layout(key);
+        draw();
+        applyScale();
+        applyFilter(filter);
+        resetDetail();
+        renderApiTable();
+        $("#vp").scrollLeft = 0;
+      }
+      document.querySelectorAll(".tab").forEach(
+        (t) =>
+          (t.onclick = () => {
+            history.replaceState(null, "", "#" + t.dataset.tab);
+            show(t.dataset.tab);
+          }),
+      );
+      document
+        .querySelectorAll("[data-f]")
+        .forEach((b) => (b.onclick = () => applyFilter(b.dataset.f)));
+      $("#fit").onclick = () => {
+        fit = !fit;
+        applyScale();
+      };
+      addEventListener("resize", () => fit && applyScale());
+      addEventListener("hashchange", () => show(location.hash.slice(1)));
+      show(location.hash.slice(1));
+    </script>
+  </body>
+</html>
